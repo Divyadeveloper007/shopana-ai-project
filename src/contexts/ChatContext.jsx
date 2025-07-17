@@ -81,7 +81,7 @@
 //   );
 // };
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getPosterHistory } from '../api/auth';
+import { api, getPosterHistory } from '../api/auth';
 
 const ChatContext = createContext();
 
@@ -202,7 +202,7 @@ useEffect(() => {
     text: `**${chat.name}**`,
     generatedImage: chat.poster.base64url?.startsWith('data:image/')
       ? chat.poster.base64url
-      : `http://192.168.1.5:9009${chat.poster.image_url}`,
+      : `/${api}/${chat.poster.image_url}`,
     timestamp: chat.created_at,
   },
 ];

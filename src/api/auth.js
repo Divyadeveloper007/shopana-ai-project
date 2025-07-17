@@ -1,7 +1,10 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://192.168.1.5:9009/api';
+const BASE_URL = 'http://192.168.1.37:9007';
 
+export const api = axios.create({
+  baseURL: BASE_URL,
+});
 
 // ----------------------- background remover ---------------------------------
 
@@ -19,16 +22,16 @@ export const convertToBase64 = (fileOrBlob) => {
 
 // export const removeBackgroundBase64 = async (base64Image) => {
 //   try {
-//     // 🧾 Log the raw base64 string to console
-//     console.log("📦 Sending base64 image payload to backend:");
-//     console.log(base64Image.slice(0, 100) + "..."); // 👈 slice to limit log size (optional)
+//     //  Log the raw base64 string to console
+//     console.log(" Sending base64 image payload to backend:");
+//     console.log(base64Image.slice(0, 100) + "..."); //  slice to limit log size (optional)
 
-//     const response = await axios.post(`${BASE_URL}/remove/remove-background-base64`, {
+//     const response = await axios.post(`${BASE_URL}/api/remove/remove-background-base64`, {
 //       image_base64: base64Image,
 //     });
 
-//     // ✅ Log response
-//     console.log("✅ Backend response:", response);
+//     //  Log response
+//     console.log(" Backend response:", response);
 
 //     if (response?.data?.image_base64) {
 //       return `data:image/png;base64,${response.data.image_base64}`;
@@ -36,7 +39,7 @@ export const convertToBase64 = (fileOrBlob) => {
 //       throw new Error("Invalid response from API");
 //     }
 //   } catch (error) {
-//     console.error("❌ Background removal API error:", error);
+//     console.error(" Background removal API error:", error);
 //     throw error;
 //   }
 // };
@@ -50,7 +53,7 @@ export const convertToBase64 = (fileOrBlob) => {
 
 export const removeBackgroundBase64 = async (base64Image) => {
   try {
-    const response = await axios.post(`${BASE_URL}/remove/remove-background-base64`, {
+    const response = await axios.post(`${BASE_URL}/api/remove/remove-background-base64`, {
       image_base64: base64Image,
     });
 
@@ -71,7 +74,7 @@ export const removeBackgroundBase64 = async (base64Image) => {
 
 
 export const signupApi = async ({ name, email, password, passwordConfirm }) => {
-  const response = await axios.post(`${BASE_URL}/auth/signup`, {
+  const response = await axios.post(`${BASE_URL}/api/auth/signup`, {
     name, 
     email,
     password,
@@ -81,7 +84,7 @@ export const signupApi = async ({ name, email, password, passwordConfirm }) => {
 };
 
 export const loginApi = async ({ email, password }) => {
-  const response = await axios.post(`${BASE_URL}/auth/signin`, {
+  const response = await axios.post(`${BASE_URL}/api/auth/signin`, {
     email,
     password
   });
@@ -90,19 +93,19 @@ export const loginApi = async ({ email, password }) => {
 
 
 export const forgotPasswordApi = async (email) => {
-  const response = await axios.post(`${BASE_URL}/auth/forgotPass`, { email });
+  const response = await axios.post(`${BASE_URL}/api/auth/forgotPass`, { email });
   return response.data;
 };
 
 
 export const verifyOtpApi = async ({ email, otp }) => {
-  const res = await axios.post(`${BASE_URL}/auth/verify`, { email, otp });
+  const res = await axios.post(`${BASE_URL}/api/auth/verify`, { email, otp });
   return res.data;
 };
 
 
 export const resetPasswordApi = async ({ email, password, confirmPassword }) => {
-  const response = await axios.post(`${BASE_URL}/auth/resetPass`, {
+  const response = await axios.post(`${BASE_URL}/api/auth/resetPass`, {
     email,
     password,
     passwordConfirm: confirmPassword,
@@ -115,7 +118,7 @@ export const changePasswordApi = async ({ email, oldPassword, password, password
   const token = localStorage.getItem('token');
 
   const response = await axios.post(
-    `${BASE_URL}/auth/updatePass`,
+    `${BASE_URL}/api/auth/updatePass`,
     {
       email,
       oldPassword,
@@ -163,7 +166,7 @@ export const saveBrandProfileApi = async (brandData, fontFile) => {
   formData.append("profile_data", JSON.stringify(profile));
   formData.append("font", fontFile);
 
-  const response = await axios.post(`${BASE_URL}/brand/setup`, formData, {
+  const response = await axios.post(`${BASE_URL}/api/brand/setup`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -177,7 +180,7 @@ export const getBrandProfile = async (brandId) => {
   try {
     const token = localStorage.getItem("token");
 
-    const response = await axios.get(`${BASE_URL}/brand/brand-profile/${brandId}`, {
+    const response = await axios.get(`${BASE_URL}/api/brand/brand-profile/${brandId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -237,7 +240,7 @@ export const updateBrandProfileApi = async (brandData, fontFile) => {
 
   const brandId = localStorage.getItem("brand_id");
 
-  return axios.put(`${BASE_URL}/brand/edit/${brandId}`, formData, {
+  return axios.put(`${BASE_URL}/api/brand/edit/${brandId}`, formData, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
       "Content-Type": "multipart/form-data",
@@ -253,7 +256,7 @@ export const generatePrompt = async ({
   product,
   season,
 }) => {
-  const endpoint = `${BASE_URL}/prompt_generator/generate_prompt/${brandId}`;
+  const endpoint = `${BASE_URL}/api/prompt_generator/generate_prompt/${brandId}`;
 
   const params = {};
   if (templateType) params.template_type = templateType;
@@ -272,7 +275,7 @@ export const generatePrompt = async ({
 
 export const generateImageFromPrompt = async (prompt) => {
   try {
-    const response = await axios.post(`${BASE_URL}/generate/generate`, {
+    const response = await axios.post(`${BASE_URL}/api/generate/generate`, {
       prompt,
     });
 
@@ -285,7 +288,7 @@ export const generateImageFromPrompt = async (prompt) => {
 
 
 export const getImageUrlById = (imageId) => {
-  return `${BASE_URL}/generate/image/${imageId}`; 
+  return `${BASE_URL}/api/generate/image/${imageId}`; 
 };
 
 
@@ -313,7 +316,7 @@ export const generatePoster = async ({ prompt, file, logo }) => {
       logo,
     };
 
-    const response = await fetch(`${BASE_URL}/generate-poster/${brandId}`, {
+    const response = await fetch(`${BASE_URL}/api/generate-poster/${brandId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -349,7 +352,7 @@ export const generatePoster = async ({ prompt, file, logo }) => {
 
 export const getPosterHistory = async (brandId) => {
   try {
-    const response = await fetch(`${BASE_URL}/poster-history/${brandId}`);
+    const response = await fetch(`${BASE_URL}/api/poster-history/${brandId}`);
     if (!response.ok) {
       throw new Error("Failed to fetch poster history");
     }
@@ -363,7 +366,7 @@ export const getPosterHistory = async (brandId) => {
 
 // Delete Poster by ID
 export const deletePosterById = async (posterId) => {
-  const res = await fetch(`${BASE_URL}/poster-history/${posterId}`, {
+  const res = await fetch(`${BASE_URL}/api/poster-history/${posterId}`, {
     method: "DELETE",
     headers: {
       Accept: "application/json",
@@ -389,7 +392,7 @@ export const uploadToCloudinary = async (blobUrl) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`${BASE_URL}/post_insta/upload-cloudinary/`, {
+  const res = await fetch(`${BASE_URL}/api/post_insta/upload-cloudinary/`, {
     method: "POST",
     body: formData,
   });
@@ -405,7 +408,7 @@ export const postToInstagram = async (image_url, caption) => {
   formData.append("image_url", image_url);
   formData.append("caption", caption);
 
-  const res = await fetch(`${BASE_URL}/post_insta/post-instagram-from-url/`, {
+  const res = await fetch(`${BASE_URL}/api/post_insta/post-instagram-from-url/`, {
     method: "POST",
     body: formData,
   });
@@ -417,7 +420,7 @@ export const postToInstagram = async (image_url, caption) => {
 };
 
 export const postToFacebook = async (image_url, caption) => {
-  const res = await fetch(`${BASE_URL}/post_insta/post-to-facebook`, {
+  const res = await fetch(`${BASE_URL}/api/post_insta/post-to-facebook`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
