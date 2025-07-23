@@ -158,6 +158,7 @@ const saveBrandSettings = async () => {
     localStorage.setItem("brand_id", data.brand_id);
     localStorage.setItem("brand_logo", logoBase64);
 
+    
     const userId = currentUser?.user_id || currentUser?.email;
     if (userId) {
       localStorage.setItem(`brandSetupDone-${userId}`, "true");

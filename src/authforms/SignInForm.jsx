@@ -8,35 +8,56 @@ import { useAuth } from "../contexts/AuthContext";
 const SignInForm = ({ formData, handleInputChange, setStep, setEmail }) => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [showPassword, setShowPassword] = useState(false); // 👁️ Show/Hide state
-
+  const [showPassword, setShowPassword] = useState(false); 
   const handleForgotClick = () => {
     setEmail(formData.email);
     setStep("forgot");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await loginApi(formData);
-      const { access_token, role, verified, user_email, user_id } = response;
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-      const userData = { token: access_token, email: user_email, user_id, role, verified };
+  // Client-side validation
+  if (!formData.email || !formData.password) {
+    toast.error("Please enter both email and password");
+    return;
+  }
 
-      login(userData);
-      localStorage.setItem("token", access_token);
-      localStorage.setItem("user_email", user_email);
-      localStorage.setItem("user_id", user_id);
-      localStorage.setItem("role", role);
-      localStorage.setItem("verified", verified);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(formData.email)) {
+    toast.error("Please enter a valid email address");
+    return;
+  }
 
-      toast.success("Login successful");
-      navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || "Login failed");
+  try {
+    const response = await loginApi(formData);
+    const { access_token, role, verified, user_email, user_id } = response;
+
+    const userData = { token: access_token, email: user_email, user_id, role, verified };
+
+    login(userData);
+    localStorage.setItem("token", access_token);
+    localStorage.setItem("user_email", user_email);
+    localStorage.setItem("user_id", user_id);
+    localStorage.setItem("role", role);
+    localStorage.setItem("verified", verified);
+
+    toast.success("Login successful");
+    navigate("/dashboard");
+  } catch (err) {
+    console.error(err);
+    const errorMsg = err.response?.data?.detail || err.response?.data?.message || "Login failed";
+
+    if (errorMsg.toLowerCase().includes("incorrect password")) {
+      toast.error("Incorrect password. Please try again.");
+    } else if (errorMsg.toLowerCase().includes("user not found")) {
+      toast.error("No account found with this email.");
+    } else {
+      toast.error(errorMsg);
     }
-  };
+  }
+};
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-xl shadow-lg">

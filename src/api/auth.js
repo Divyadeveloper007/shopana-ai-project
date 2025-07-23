@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://192.168.1.37:9007';
+const BASE_URL = 'http://192.168.1.15:9002';
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -8,38 +8,72 @@ export const api = axios.create({
 
 // ----------------------- background remover ---------------------------------
 
+// src/api/imageApi.js
+
+// Convert file/blob to base64
 export const convertToBase64 = (fileOrBlob) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(fileOrBlob);
     reader.onload = () => {
-      const base64Data = reader.result.split(",")[1]; // remove prefix
+      const base64Data = reader.result.split(',')[1];
       resolve(base64Data);
     };
     reader.onerror = (error) => reject(error);
   });
 };
 
+// API call to remove background using base64
+export const removeBackgroundBase64 = async (base64Image) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/remove/remove-background-base64`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image_base64: base64Image }),
+    });
+
+    let result = (await response.json())?.image_base64;
+    if (!result.startsWith('data:image')) {
+      result = `data:image/png;base64,${result}`;
+    }
+
+    return result;
+  } catch (error) {
+    console.error('❌ Background removal failed:', error);
+    return null;
+  }
+};
+
+
+// export const convertToBase64 = (fileOrBlob) => {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.readAsDataURL(fileOrBlob);
+//     reader.onload = () => {
+//       const base64Data = reader.result.split(",")[1]; // remove prefix
+//       resolve(base64Data);
+//     };
+//     reader.onerror = (error) => reject(error);
+//   });
+// };
+
+
 // export const removeBackgroundBase64 = async (base64Image) => {
 //   try {
-//     //  Log the raw base64 string to console
-//     console.log(" Sending base64 image payload to backend:");
-//     console.log(base64Image.slice(0, 100) + "..."); //  slice to limit log size (optional)
-
 //     const response = await axios.post(`${BASE_URL}/api/remove/remove-background-base64`, {
 //       image_base64: base64Image,
 //     });
 
-//     //  Log response
-//     console.log(" Backend response:", response);
+//     let result = response?.data?.image_base64;
 
-//     if (response?.data?.image_base64) {
-//       return `data:image/png;base64,${response.data.image_base64}`;
-//     } else {
-//       throw new Error("Invalid response from API");
+//     // ✅ If prefix already exists, don't add again
+//     if (!result.startsWith("data:image")) {
+//       result = `data:image/png;base64,${result}`;
 //     }
+
+//     return result;
 //   } catch (error) {
-//     console.error(" Background removal API error:", error);
+//     console.error("❌ Background removal API error:", error);
 //     throw error;
 //   }
 // };
@@ -50,27 +84,6 @@ export const convertToBase64 = (fileOrBlob) => {
 
 
 // ------------------------- signup, signin, forgot, reset password--------------
-
-export const removeBackgroundBase64 = async (base64Image) => {
-  try {
-    const response = await axios.post(`${BASE_URL}/api/remove/remove-background-base64`, {
-      image_base64: base64Image,
-    });
-
-    let result = response?.data?.image_base64;
-
-    // ✅ If prefix already exists, don't add again
-    if (!result.startsWith("data:image")) {
-      result = `data:image/png;base64,${result}`;
-    }
-
-    return result;
-  } catch (error) {
-    console.error("❌ Background removal API error:", error);
-    throw error;
-  }
-};
-
 
 
 export const signupApi = async ({ name, email, password, passwordConfirm }) => {
@@ -306,7 +319,7 @@ const dataURLtoBlob = (dataUrl) => {
   return new Blob([u8arr], { type: mime });
 };
 
-export const generatePoster = async ({ prompt, file, logo }) => {
+export const generatePoster = async ({ prompt, file, logo, offer }) => {
   try {
     const brandId = localStorage.getItem("brand_id");
 
@@ -314,6 +327,7 @@ export const generatePoster = async ({ prompt, file, logo }) => {
       prompt,
       file,
       logo,
+      ...(offer && { offer }), // send only if offer is provided
     };
 
     const response = await fetch(`${BASE_URL}/api/generate-poster/${brandId}`, {
@@ -329,13 +343,12 @@ export const generatePoster = async ({ prompt, file, logo }) => {
       throw new Error(`Poster generation failed: ${errorText}`);
     }
 
-    // Get image as blob
     const blob = await response.blob();
     const imageUrl = URL.createObjectURL(blob);
 
     return {
       posterUrl: imageUrl,
-      headline: "Your Poster is Ready!", // no headline from backend
+      headline: "Your Poster is Ready!",
       metadata: {
         fontColor: "white",
         fontSize: "40px",
@@ -348,6 +361,7 @@ export const generatePoster = async ({ prompt, file, logo }) => {
     throw err;
   }
 };
+
 
 
 export const getPosterHistory = async (brandId) => {
@@ -382,6 +396,72 @@ export const deletePosterById = async (posterId) => {
   return data;
 };
 
+// ---------------------------- create poster with template --------------------
+export const createPosterWithTemplate = async ({ prompt, file, logo, temp_img, offer }) => {
+  try {
+    const brandId = localStorage.getItem("brand_id");
+
+    // New function to compress and convert to base64
+    const compressAndConvertToBase64 = async (url, maxSizeMB = 1.5) => {
+      const response = await fetch(url);
+      const blob = await response.blob();
+
+      // Check size and warn if too large
+      if (blob.size / (1024 * 1024) > maxSizeMB) {
+        console.warn("Image too large, please compress or choose a smaller template.");
+        throw new Error("Template image too large.");
+      }
+
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    };
+
+    // Use the new function
+    const templateBase64 = await compressAndConvertToBase64(temp_img, 1.5); // Allow up to 1.5MB
+
+    const payload = {
+      prompt,
+      file,
+      logo,
+      temp_img: templateBase64, // send as base64
+      offer, // 🔥 added offer string here
+    };
+
+    const response = await fetch(`${BASE_URL}/api/generate-poster_template/${brandId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Poster generation failed: ${errorText}`);
+    }
+
+    const blob = await response.blob();
+    const imageUrl = URL.createObjectURL(blob);
+
+    return {
+      posterUrl: imageUrl,
+      headline: "Your Poster is Ready!",
+      metadata: {
+        fontColor: "white",
+        fontSize: "40px",
+        textPosition: "top center",
+        logoPosition: "bottom right",
+      },
+    };
+  } catch (err) {
+    console.error("Poster Generation Failed:", err);
+    throw err;
+  }
+};
 
 // -------------------------- post image for insta, facebook--------------
 

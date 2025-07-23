@@ -6,17 +6,36 @@ import { toast } from "react-toastify";
 const SignUpForm = ({ formData, handleInputChange, setStep }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
- const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
 
-  // Step 1: Get existing users from localStorage
-  const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+  const { name, email, password, passwordConfirm } = formData;
 
-  // Step 2: Check if email already exists
-  const userExists = existingUsers.some(
-    (user) => user.email === formData.email
-  );
+  // ✅ Basic validations
+  if (!name || !email || !password || !passwordConfirm) {
+    toast.error("Please fill in all fields");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    toast.error("Invalid email format");
+    return;
+  }
+
+  if (password.length < 6) {
+    toast.error("Password must be at least 6 characters");
+    return;
+  }
+
+  if (password !== passwordConfirm) {
+    toast.error("Passwords do not match");
+    return;
+  }
+
+  // Check if user exists in localStorage
+  const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+  const userExists = existingUsers.some((user) => user.email === email);
 
   if (userExists) {
     toast.error("User with this email already exists!");
@@ -26,17 +45,23 @@ const SignUpForm = ({ formData, handleInputChange, setStep }) => {
   try {
     const res = await signupApi(formData);
 
-    // Step 3: Save this user in localStorage
     const updatedUsers = [...existingUsers, formData];
     localStorage.setItem("users", JSON.stringify(updatedUsers));
     localStorage.setItem("userData", JSON.stringify(formData)); // Optional current user
 
     toast.success("Signup successful!");
     setStep("signin");
-  } catch (err) {
-    console.error(err);
-    toast.error(err.response?.data?.message || "Signup failed");
+  }catch (err) {
+  console.error(err);
+  const errorMsg = err.response?.data?.detail || err.response?.data?.message || "Signup failed";
+
+  if (errorMsg.toLowerCase().includes("email is already registered")) {
+    toast.error("This email is already registered. Please use another.");
+  } else {
+    toast.error(errorMsg);
   }
+}
+
 };
 
 

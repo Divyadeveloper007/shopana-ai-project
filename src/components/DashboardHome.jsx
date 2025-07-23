@@ -23,6 +23,7 @@ import GeneratedGallery from './posts/GeneratedGallery';
 import Templates from './templates/Templates';
 // import ProfilePage from '../user/ProfilePage';
 import SettingsLayout from './settings/SettingsLayout';
+import BrandCanvas from './brandCanvas/BrandCanvas';
 
 const DashboardHome = ({ currentView, setCurrentView }) => {
 const [subView, setSubView] = useState('prompt'); 
@@ -43,6 +44,7 @@ const [subView, setSubView] = useState('prompt');
   if (currentView === 'analytics') return <Analytics />;
   if (currentView === 'settings') return <SettingsLayout />;
 if (currentView === 'gallery') return <GeneratedGallery />;
+if (currentView === 'canvas') return <BrandCanvas />;
   // if (currentView === 'settings') return <ProfilePage />;
 
   // const stats = [

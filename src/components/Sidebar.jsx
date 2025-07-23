@@ -10,6 +10,7 @@ import {
   Images,
   LayoutTemplate,
   Settings,
+  Layers,
 } from "lucide-react";
 import { useChat } from "../contexts/ChatContext";
 import { deletePosterById } from "../api/auth";
@@ -24,21 +25,31 @@ const Sidebar = ({ onClose, currentView, setCurrentView }) => {
     deleteChat,
     // fetchAllChats,
   } = useChat();
-  // console.log("Sidebar chats:", chats);
+ const userId = localStorage.getItem("user_id");
+const brandId = localStorage.getItem("brand_id");
 
-  const userId =
-    localStorage.getItem("user_id") || localStorage.getItem("user_email");
-  const isBrandSetupDone =
-    localStorage.getItem(`brandSetupDone-${userId}`) === "true";
+let isBrandSetupDone = false;
 
-  const menuItems = [
-    !isBrandSetupDone && { id: "brand", label: "Brand Setup", icon: Palette },
-    { id: "home", label: "Dashboard", icon: Home },
-    { id: "create", label: "Create Prompt", icon: FolderPlus },
-    { id: "gallery", label: "Image Gallery", icon: Images },
-    { id: "templates", label: "Templates", icon: LayoutTemplate },
-    { id: "settings", label: "Settings", icon: Settings },
-  ].filter(Boolean); // remove `false` entries
+if (userId) {
+  const setupStatus = localStorage.getItem(`brandSetupDone-${userId}`);
+  isBrandSetupDone = setupStatus === "true";
+}
+
+console.log("userId:", userId);
+console.log("brandId:", brandId);
+console.log("brandSetupDone:", isBrandSetupDone);
+
+// Now use the flag correctly
+const menuItems = [
+  !isBrandSetupDone && { id: "brand", label: "Brand Setup", icon: Palette },
+  { id: "home", label: "Dashboard", icon: Home },
+  { id: "canvas", label: "Brand Canvas", icon: Palette },
+  { id: "create", label: "Create Prompt", icon: FolderPlus },
+  { id: "gallery", label: "Image Gallery", icon: Images },
+  { id: "templates", label: "Templates", icon: Layers },
+  { id: "settings", label: "Settings", icon: Settings },
+].filter(Boolean);
+
 
   // useEffect(() => {
   //   fetchAllChats();

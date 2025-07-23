@@ -130,7 +130,7 @@ const PromptOutput = ({ setCurrentView }) => {
                           <Share2 size={20} />
                         </button>
 
-                        <button
+                        {/* <button
                           onClick={() =>
                             setCurrentView("editor", msg.generatedImage)
                           } // ⬅️ Pass image
@@ -138,7 +138,7 @@ const PromptOutput = ({ setCurrentView }) => {
                           className="bg-white p-2 rounded-full shadow text-gray-800 hover:bg-gray-200"
                         >
                           <Edit size={20} />
-                        </button>
+                        </button> */}
                       </div>
                     </div>
                   )}

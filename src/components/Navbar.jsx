@@ -19,14 +19,34 @@ const Navbar = ({ onMenuClick, setCurrentView }) => {
   const navigate = useNavigate();
   const [showChangePassword, setShowChangePassword] = useState(false);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/auth");
-    } catch (error) {
-      console.error("Logout error:", error);
+const handleLogout = async () => {
+  try {
+    const brandId = localStorage.getItem("brand_id");
+    const userId = localStorage.getItem("user_id");
+
+    const brandSetupDone = localStorage.getItem(`brandSetupDone-${userId}`);
+
+    await logout();
+
+    // Instead of clear(), just remove login-related items
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("token"); // If using
+    // 🔒 Preserve brandSetupDone & brandId
+
+    if (brandId) {
+      localStorage.setItem("brand_id", brandId);
     }
-  };
+
+    if (userId && brandSetupDone) {
+      localStorage.setItem(`brandSetupDone-${userId}`, brandSetupDone);
+    }
+
+    navigate("/auth");
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
+};
+
 
   const getInitials = (name) => {
     return name
@@ -134,11 +154,6 @@ const Navbar = ({ onMenuClick, setCurrentView }) => {
                   Profile
                 </button>
 
-                {/* Settings */}
-                {/* <button className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
-                </button> */}
 
                 {/* Credits on Mobile */}
                 <button className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center sm:hidden">

@@ -2,19 +2,18 @@ import React, { useEffect, useRef, useState } from "react";
 import { useChat } from "../../contexts/ChatContext";
 import { Sparkles, Image as ImageIcon, Loader2, Send, X } from "lucide-react";
 import { generatePoster, getBrandProfile } from "../../api/auth";
-import axios from "axios";
 
 const InputField = ({ setCurrentView }) => {
   const { currentChatId, createChat, addMessage } = useChat();
 
   const [message, setMessage] = useState("");
-  const [imageFile, setImageFile] = useState(null); // for current input
-  const [lastImageFile, setLastImageFile] = useState(null); // persist last uploaded image
+  const [offer, setOffer] = useState(""); // ✅ New offer field
+  const [imageFile, setImageFile] = useState(null);
+  const [lastImageFile, setLastImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
 
   const brandId = localStorage.getItem("brand_id");
-
   const [brandLogo, setBrandLogo] = useState();
 
   useEffect(() => {
@@ -34,72 +33,73 @@ const InputField = ({ setCurrentView }) => {
     fetchBrandData();
   }, [brandId]);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!message.trim() && !imageFile && !lastImageFile) return;
+    if (!message.trim() && !imageFile && !lastImageFile) return;
 
-  setLoading(true);
-  const chatId = currentChatId || createChat();
+    setLoading(true);
+    const chatId = currentChatId || createChat();
 
-  try {
-    const fileToSend = imageFile || lastImageFile;
+    try {
+      const fileToSend = imageFile || lastImageFile;
 
-    const userMsg = {
-      type: "user",
-      text: message || "Please analyze this image",
-    };
+      const userMsg = {
+        type: "user",
+        text: message || "Please analyze this image",
+      };
 
-    if (fileToSend) {
-      const localUrl = URL.createObjectURL(fileToSend);
-      userMsg.image = localUrl;
+      if (fileToSend) {
+        const localUrl = URL.createObjectURL(fileToSend);
+        userMsg.image = localUrl;
+      }
+
+      addMessage(chatId, userMsg);
+
+      // Convert file to base64
+      const base64Image = fileToSend
+        ? await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(fileToSend);
+          })
+        : null;
+
+      const payload = {
+        prompt: message,
+        file: base64Image,
+        logo: brandLogo?.logo_base64,
+        ...(offer.trim() && { offer }), // ✅ Include only if not empty
+      };
+
+      console.log("Payload:", payload);
+
+      const result = await generatePoster(payload);
+
+      const aiMsg = {
+        type: "bot",
+        text: `**${result.headline}**\n\nFont: ${result.metadata.fontColor}`,
+        generatedImage: result.posterUrl,
+      };
+
+      addMessage(chatId, aiMsg);
+
+      if (imageFile) setLastImageFile(imageFile);
+    } catch (error) {
+      console.error("Poster Generation Failed:", error);
+      addMessage(chatId, {
+        type: "bot",
+        text: "Something went wrong while generating poster. Please try again.",
+        error: true,
+      });
+    } finally {
+      setLoading(false);
+      setMessage("");
+      setOffer(""); // ✅ Clear offer
+      setImageFile(null);
     }
-
-    addMessage(chatId, userMsg);
-
-    // Convert file to base64
-    const base64Image = fileToSend
-      ? await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(fileToSend);
-        })
-      : null;
-
-    const payload = {
-      prompt: message,
-      file: base64Image,
-      logo: brandLogo?.logo_base64,
-    };
-
-    console.log("Payload:", payload);
-
-    const result = await generatePoster(payload);
-
-    const aiMsg = {
-      type: "bot",
-      text: `**${result.headline}**\n\nFont: ${result.metadata.fontColor}`,
-      generatedImage: result.posterUrl,
-    };
-
-    addMessage(chatId, aiMsg);
-
-    if (imageFile) setLastImageFile(imageFile);
-  } catch (error) {
-    console.error("Poster Generation Failed:", error);
-    addMessage(chatId, {
-      type: "bot",
-      text: "Something went wrong while generating poster. Please try again.",
-      error: true,
-    });
-  } finally {
-    setLoading(false);
-    setMessage("");
-    setImageFile(null);
-  }
-};
-
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -133,10 +133,11 @@ const handleSubmit = async (e) => {
           className="hidden"
         />
 
-        {/* Prompt Input with Image Preview */}
+        {/* Prompt + Offer Input + Preview */}
         <div className="relative flex-1">
           <div className="border rounded-lg px-4 pt-3 pb-2 pr-10 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white border-gray-300 dark:border-gray-700">
-            {/* Image preview inside input */}
+
+            {/* Image Preview */}
             {imageFile && (
               <div className="relative inline-block mb-2">
                 <img
@@ -154,18 +155,28 @@ const handleSubmit = async (e) => {
               </div>
             )}
 
-            {/* Prompt text input */}
+            {/* Prompt Text Input */}
             <input
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Describe the poster you want..."
-              className="w-full outline-none bg-transparent"
+              className="w-full outline-none bg-transparent mb-1"
+              disabled={loading}
+            />
+
+            {/* ✅ Optional Offer Field */}
+            <input
+              type="text"
+              value={offer}
+              onChange={(e) => setOffer(e.target.value)}
+              placeholder="Optional offer (e.g. 20% OFF)"
+              className="w-full outline-none bg-transparent text-xs text-gray-600 dark:text-gray-400 placeholder-gray-400 dark:placeholder-gray-500"
               disabled={loading}
             />
           </div>
 
-          {/* Sparkle icon */}
+          {/* Sparkle Icon */}
           <Sparkles className="absolute right-3 top-3 text-gray-400 dark:text-gray-500 w-4 h-4" />
         </div>
 

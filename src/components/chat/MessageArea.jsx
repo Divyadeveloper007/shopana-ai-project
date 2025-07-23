@@ -2,7 +2,6 @@
 import { useState } from "react";
 import PromptOutput from "./PromptOutput";
 import InputField from "./InputField";
-import GenerateTemplateEditor from "./templateSection/GenerateTemplateEditor";
 import GeneratedGallery from "../posts/GeneratedGallery";
 
 const MessageArea = () => {
@@ -25,10 +24,6 @@ const MessageArea = () => {
             <InputField />
           </div>
         </>
-      )}
-
-      {currentView === "editor" && selectedImage && (
-        <GenerateTemplateEditor image={selectedImage} setCurrentView={setCurrentView} />
       )}
 
       {currentView === "gallery" && (
