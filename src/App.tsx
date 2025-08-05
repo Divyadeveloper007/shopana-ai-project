@@ -16,7 +16,7 @@ const App: React.FC = () => {
       <Routes>
         <Route 
           path="/" 
-          element={isLoggedIn ? <Navigate to="/dashboard/home" /> : <Navigate to="/login" />} 
+          element={isLoggedIn ? <Navigate to="/dashboard/post" /> : <Navigate to="/login" />} 
         />
         <Route 
           path="/login" 
@@ -30,5 +30,4 @@ const App: React.FC = () => {
     </Router>
   );
 };
-
 export default App;

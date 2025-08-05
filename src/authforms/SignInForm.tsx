@@ -29,25 +29,24 @@ const SignInForm: React.FC<SignInFormProps> = ({
     setStep("forgot");
   };
 
-  const handleLoginSuccess = (response: {
-    access_token: string;
-    user_email: string;
-    user_id: string;
-    role: string;
-    verified: boolean;
-  }) => {
-    // Store user data in localStorage
-    localStorage.setItem("token", response.access_token);
-    localStorage.setItem("user_email", response.user_email);
-    localStorage.setItem("user_id", response.user_id);
-    localStorage.setItem("role", response.role);
-    localStorage.setItem("verified", String(response.verified));
+ const handleLoginSuccess = (response: {
+  access_token: string;
+  user_email: string;
+  user_id: string;
+  role: string;
+  verified: boolean;
+}) => {
+  // Store user data in localStorage
+  localStorage.setItem("token", response.access_token);
+  localStorage.setItem("user_email", response.user_email);
+  localStorage.setItem("user_id", response.user_id);
+  localStorage.setItem("role", response.role);
+  localStorage.setItem("verified", String(response.verified));
 
-    // You might want to also store this in your state management (Redux, Context, etc.)
-    
-    toast.success("Login successful");
-    navigate("/dashboard");
-  };
+  toast.success("Login successful");
+  navigate("/dashboard/post");  // Changed from "/dashboard" to "/dashboard/post"
+};
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -174,7 +174,7 @@ export const changePasswordApi = async (payload: ChangePasswordPayload) => {
   const token = localStorage.getItem('token');
 
   const response = await axios.post(
-    `${BASE_URL}/api/auth/updatePass`,
+    `${BASE_URL}/api/updatePass`,
     payload,
     {
       headers: {
