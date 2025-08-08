@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import DashboardHome from "./DashboardHome";
-
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Dashboard: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   
   // Extract the view from the URL (e.g., /dashboard/post -> 'post')
   const currentView = location.pathname.split('/').pop() || 'home';
@@ -18,6 +18,11 @@ const Dashboard: React.FC = () => {
 
   const closeSidebar = () => {
     setSidebarOpen(false);
+  };
+
+  const handleNavigation = (view: string) => {
+    navigate(`/dashboard/${view}`);
+    closeSidebar();
   };
 
   return (
@@ -42,10 +47,7 @@ const Dashboard: React.FC = () => {
           <Sidebar
             onClose={closeSidebar}
             currentView={currentView}
-            setCurrentView={(view) => {
-              // You might want to navigate here instead of just setting the view
-              // This ensures the URL matches the view
-            }}
+            setCurrentView={handleNavigation}
           />
         </div>
 

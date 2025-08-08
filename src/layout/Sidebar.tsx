@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Globe2,
   Home,
   Layers,
 } from "lucide-react";
@@ -14,6 +15,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, currentView, setCurrentView 
   const menuItems = [
     { id: "home", label: "Dashboard", icon: Home },
     { id: "post", label: "Post to Platforms", icon: Layers },
+    { id: "social_media_manager", label: "Social Media Manager", icon: Globe2  },
   ];
 
   return (
@@ -33,7 +35,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, currentView, setCurrentView 
                 }`}
                 onClick={() => {
                   setCurrentView(item.id);
-                  onClose?.();
                 }}
               >
                 <Icon className="w-5 h-5 mr-3" />

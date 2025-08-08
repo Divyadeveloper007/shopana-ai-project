@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://192.168.1.5:9007';
+const BASE_URL = 'http://192.168.1.14:9002';
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -183,5 +183,94 @@ export const changePasswordApi = async (payload: ChangePasswordPayload) => {
     }
   );
 
+  return response.data;
+};
+
+
+// Instagram APIs
+export const getInstagramCredentials = async (userId: string) => {
+  const response = await axios.get(`${BASE_URL}/api/get-instagram-credentials/${userId}`);
+  return response.data;
+};
+
+export const saveInstagramCredentials = async (data: {
+  user_id: string;
+  ACCESS_TOKENS: string;
+  IG_USER_ID: string;
+}) => {
+  const response = await axios.post(`${BASE_URL}/api/save-instagram-credentials/`, data);
+  return response.data;
+};
+
+export const updateInstagramCredentials = async (data: {
+  user_id: string;
+  ACCESS_TOKENS: string;
+  IG_USER_ID: string;
+}) => {
+  const response = await axios.put(`${BASE_URL}/api/edit-instagram-credentials/`, data);
+  return response.data;
+};
+
+// Facebook APIs
+export const getFacebookCredentials = async (userId: string) => {
+  const response = await axios.get(`${BASE_URL}/api/get-facebook-credentials/${userId}`);
+  return response.data;
+};
+
+export const saveFacebookCredentials = async (data: {
+  user_id: string;
+  PAGE_ID: string;
+  FACEBOOK_ACCESS: string;
+}) => {
+  const response = await axios.post(`${BASE_URL}/api/save-facebook-credentials/`, data);
+  return response.data;
+};
+
+export const updateFacebookCredentials = async (data: {
+  user_id: string;
+  PAGE_ID: string;
+  FACEBOOK_ACCESS: string;
+}) => {
+  const response = await axios.put(`${BASE_URL}/api/edit-facebook-credentials/`, data);
+  return response.data;
+};
+
+// Both Platforms APIs
+export const getBothCredentials = async (userId: string) => {
+  const response = await axios.get(`${BASE_URL}/api/get-credentials/${userId}`);
+  return response.data;
+};
+
+export const saveBothCredentials = async (data: {
+  user_id: string;
+  insta_credentials: {
+    user_id: string;
+    ACCESS_TOKENS: string;
+    IG_USER_ID: string;
+  };
+  facebook_credentials: {
+    user_id: string;
+    PAGE_ID: string;
+    FACEBOOK_ACCESS: string;
+  };
+}) => {
+  const response = await axios.post(`${BASE_URL}/api/save-credentials/`, data);
+  return response.data;
+};
+
+export const updateBothCredentials = async (data: {
+  user_id: string;
+  insta_credentials: {
+    user_id: string;
+    ACCESS_TOKENS: string;
+    IG_USER_ID: string;
+  };
+  facebook_credentials: {
+    user_id: string;
+    PAGE_ID: string;
+    FACEBOOK_ACCESS: string;
+  };
+}) => {
+  const response = await axios.put(`${BASE_URL}/api/update-credentials/`, data);
   return response.data;
 };

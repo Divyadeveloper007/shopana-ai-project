@@ -1,5 +1,6 @@
 import React from 'react';
 import PostToPlatforms from '../pages/PostToPlatforms';
+import SocialMediaManager from '../pages/SocialMediaManager';
 
 interface DashboardHomeProps {
   currentView: string;
@@ -20,6 +21,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ currentView }) => {
   );
 
   if (currentView === 'post') return <PostToPlatforms />;
+  if (currentView === 'social_media_manager') return <SocialMediaManager />;
 
   return null;
 };
